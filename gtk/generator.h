@@ -4,6 +4,6 @@
 #include <gtk/gtk.h>
 
 GtkWidget *create_generator_layout();
-void on_generate_password(GtkButton *button, gpointer user_data);
+char *generate_password(int taille, int nb_special, int nb_upper, int nb_digit);
 
 #endif
