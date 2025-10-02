@@ -19,23 +19,19 @@ char *generate_password(int length, int num_special, int num_upper, int num_digi
 
     srand((unsigned int)time(NULL));
 
-    // Ajoute caractères spéciaux
     for (i = 0; i < num_special; i++)
         buffer[pos++] = special[rand() % (int)(sizeof(special) - 1)];
 
-    // Ajoute majuscules
     for (i = 0; i < num_upper; i++)
         buffer[pos++] = upper[rand() % (int)(sizeof(upper) - 1)];
 
-    // Ajoute chiffres
     for (i = 0; i < num_digit; i++)
         buffer[pos++] = digit[rand() % (int)(sizeof(digit) - 1)];
 
-    // Complète avec minuscules
     for (i = pos; i < length; i++)
         buffer[pos++] = lower[rand() % (int)(sizeof(lower) - 1)];
 
-    // Mélange le mot de passe
+    
     for (i = 0; i < length; i++)
     {
         int j = rand() % length;
