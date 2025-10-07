@@ -1,6 +1,7 @@
 #include "password.h"
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #include <ctype.h>
 
 char *generate_password(int length, int num_special, int num_upper, int num_digit)
@@ -17,19 +18,26 @@ char *generate_password(int length, int num_special, int num_upper, int num_digi
     if (num_special + num_upper + num_digit > length)
         return NULL;
 
-    srand((unsigned int)time(NULL));
+    /* Seed rand() once to avoid reseeding on every call (which can
+       produce the same sequence when called multiple times per second). */
+    static int seeded = 0;
+    if (!seeded)
+    {
+        srand((unsigned int)time(NULL));
+        seeded = 1;
+    }
 
     for (i = 0; i < num_special; i++)
-        buffer[pos++] = special[rand() % (int)(sizeof(special) - 1)];
+        buffer[pos++] = special[rand() % (int)strlen(special)];
 
     for (i = 0; i < num_upper; i++)
-        buffer[pos++] = upper[rand() % (int)(sizeof(upper) - 1)];
+        buffer[pos++] = upper[rand() % (int)strlen(upper)];
 
     for (i = 0; i < num_digit; i++)
-        buffer[pos++] = digit[rand() % (int)(sizeof(digit) - 1)];
+        buffer[pos++] = digit[rand() % (int)strlen(digit)];
 
     for (i = pos; i < length; i++)
-        buffer[pos++] = lower[rand() % (int)(sizeof(lower) - 1)];
+        buffer[pos++] = lower[rand() % (int)strlen(lower)];
 
     for (i = 0; i < length; i++)
     {
