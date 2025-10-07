@@ -19,7 +19,6 @@ int db_init(const char *filename)
     }
     return 1;
 }
-
 int db_add_password(const char *site, const char *login, const char *password)
 {
     char sql[512];
@@ -38,6 +37,19 @@ int db_update_password(const char *site, const char *login, const char *new_pass
     if (sqlite3_exec(db, sql, 0, 0, 0) != SQLITE_OK)
     {
         fprintf(stderr, "Erreur modification: %s\n", sqlite3_errmsg(db));
+        return 0;
+    }
+    return 1;
+}
+
+int db_update_entry(const char *site, const char *old_login, const char *new_login, const char *new_password)
+{
+    char sql[512];
+    snprintf(sql, sizeof(sql), "UPDATE passwords SET login='%s', password='%s' WHERE site='%s' AND login='%s';",
+             new_login, new_password, site, old_login);
+    if (sqlite3_exec(db, sql, 0, 0, 0) != SQLITE_OK)
+    {
+        fprintf(stderr, "Erreur modification entrée: %s\n", sqlite3_errmsg(db));
         return 0;
     }
     return 1;

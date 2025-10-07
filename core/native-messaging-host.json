@@ -1,0 +1,7 @@
+{
+  "name": "com.project_c.passwords",
+  "description": "Native host for PROJECT_C password manager",
+  "path": "C:\\Users\\pauls\\AppData\\Local\\PROJECT_C\\native_host.exe",
+  "type": "stdio",
+  "allowed_origins": ["chrome-extension://adhgjjkbgdiafcgbnomonaldpominmfg/"]
+}

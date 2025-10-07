@@ -3,7 +3,6 @@
 #include "generator.h"
 #include "manager.h"
 
-// Fenêtre d'accueil avec deux boutons
 GtkWidget *create_home_layout(GtkWidget *window)
 {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);

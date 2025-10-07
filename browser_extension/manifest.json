@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "PROJECT_C Password Bridge",
+  "version": "0.1",
+  "description": "Bridge between browser and local PROJECT_C password manager via Native Messaging",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "PROJECT_C"
+  },
+  "permissions": ["nativeMessaging", "storage"],
+  "host_permissions": []
+}
