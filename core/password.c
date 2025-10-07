@@ -6,7 +6,7 @@
 char *generate_password(int length, int num_special, int num_upper, int num_digit)
 {
     static char buffer[129];
-    const char *special = "!@#$%^&*";
+    const char *special = "!@#$%^&*()-_=+[]{}|;:,.<>?";
     const char *upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const char *lower = "abcdefghijklmnopqrstuvwxyz";
     const char *digit = "0123456789";
@@ -31,7 +31,6 @@ char *generate_password(int length, int num_special, int num_upper, int num_digi
     for (i = pos; i < length; i++)
         buffer[pos++] = lower[rand() % (int)(sizeof(lower) - 1)];
 
-    
     for (i = 0; i < length; i++)
     {
         int j = rand() % length;
