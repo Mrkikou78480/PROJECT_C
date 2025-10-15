@@ -5,6 +5,7 @@
 #include <string.h>
 #include "../manager.h"
 #include "manager_function.h"
+#include "../../core/auth.h"
 
 typedef struct
 {
@@ -130,8 +131,11 @@ void on_save_password(GtkButton *button, gpointer user_data)
 void add_passwords_to_list(GtkListBox *list_box)
 {
     sqlite3_stmt *stmt;
-    if (sqlite3_prepare_v2(db, "SELECT site, login, password FROM passwords;", -1, &stmt, NULL) == SQLITE_OK)
+    const char *owner = auth_get_current_user();
+    const char *q = "SELECT site, login, password FROM passwords WHERE owner = ?;";
+    if (sqlite3_prepare_v2(db, q, -1, &stmt, NULL) == SQLITE_OK)
     {
+        sqlite3_bind_text(stmt, 1, owner, -1, SQLITE_TRANSIENT);
         while (sqlite3_step(stmt) == SQLITE_ROW)
         {
             const char *site = (const char *)sqlite3_column_text(stmt, 0);
