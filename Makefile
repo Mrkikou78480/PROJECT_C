@@ -1,7 +1,6 @@
-# Simple Makefile for PROJECT_C (Windows MSYS2/mingw64)
 CC = gcc
 CFLAGS = -Wall -g -O2 `pkg-config --cflags gtk4`
-LDFLAGS = `pkg-config --libs gtk4` -lsqlite3 -lbcrypt
+LDFLAGS = `pkg-config --libs gtk4` -lsqlite3 -ladvapi32
 SRCDIR = .
 GTKDIR = gtk
 COREDIR = core

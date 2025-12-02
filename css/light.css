@@ -1,0 +1,129 @@
+window {
+  background-color: #f5f5f5;
+  color: #000000;
+}
+
+/* Barre de titre */
+headerbar {
+  background-color: #e8e8e8;
+  background-image: none;
+  color: #000000;
+  border-bottom: 1px solid #cccccc;
+  min-height: 40px;
+}
+
+headerbar:backdrop {
+  background-color: #f0f0f0;
+  color: #666666;
+}
+
+headerbar label,
+headerbar .title {
+  color: #000000;
+  font-weight: bold;
+}
+
+headerbar button {
+  background-color: transparent;
+  background-image: none;
+  color: #000000;
+  border: none;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+headerbar button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  background-image: none;
+}
+
+headerbar button:active {
+  background-color: rgba(0, 0, 0, 0.2);
+  background-image: none;
+}
+
+titlebar {
+  background-color: #e8e8e8;
+  background-image: none;
+  color: #000000;
+  border-bottom: 1px solid #cccccc;
+}
+
+titlebar label,
+titlebar .title {
+  color: #000000;
+  font-weight: bold;
+}
+
+titlebar button {
+  background-color: transparent;
+  background-image: none;
+  color: #000000;
+  border: none;
+}
+
+label {
+  color: #000000;
+}
+
+button {
+  background-color: #e8e8e8;
+  background-image: none;
+  color: #000000;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  padding: 6px 12px;
+  min-height: 32px;
+}
+
+button:hover {
+  background-color: #d0d0d0;
+  background-image: none;
+}
+
+button:active {
+  background-color: #c0c0c0;
+  background-image: none;
+}
+
+button label {
+  color: #000000;
+  font-weight: normal;
+}
+
+button * {
+  color: #000000;
+}
+
+entry {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #cccccc;
+}
+
+entry:focus {
+  border: 2px solid #007acc;
+}
+
+entry text {
+  color: #000000;
+  caret-color: #000000;
+}
+
+entry placeholder {
+  color: #888888;
+}
+
+.password-label {
+  color: #333333;
+  background-color: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 3px;
+}
+
+.card {
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
+  border-radius: 8px;
+  padding: 24px;
+}

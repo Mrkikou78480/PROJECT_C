@@ -18,8 +18,6 @@ char *generate_password(int length, int num_special, int num_upper, int num_digi
     if (num_special + num_upper + num_digit > length)
         return NULL;
 
-    /* Seed rand() once to avoid reseeding on every call (which can
-       produce the same sequence when called multiple times per second). */
     static int seeded = 0;
     if (!seeded)
     {

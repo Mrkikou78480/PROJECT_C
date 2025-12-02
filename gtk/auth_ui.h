@@ -3,8 +3,10 @@
 
 #include <gtk/gtk.h>
 
-// Creates and returns a widget that contains login/register UI.
-// On successful login or registration, it invokes a callback to show the main UI.
-GtkWidget *create_auth_layout(GtkApplication *app, GtkWidget *main_window, void (*on_authenticated)(GtkWidget *window));
+GtkWidget *create_welcome_layout(GtkApplication *app, GtkWidget *main_window, void (*on_authenticated)(GtkWidget *window));
+
+GtkWidget *create_login_layout(GtkApplication *app, GtkWidget *main_window, void (*on_authenticated)(GtkWidget *window));
+
+GtkWidget *create_register_layout(GtkApplication *app, GtkWidget *main_window, void (*on_authenticated)(GtkWidget *window));
 
 #endif

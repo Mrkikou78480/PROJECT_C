@@ -1,0 +1,122 @@
+window {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+/* Barre de titre */
+headerbar {
+  background-color: #2d2d2d;
+  background-image: none;
+  color: #ffffff;
+  border-bottom: 1px solid #555555;
+  min-height: 40px;
+}
+
+headerbar:backdrop {
+  background-color: #252526;
+  color: #cccccc;
+}
+
+headerbar label,
+headerbar .title {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+headerbar button {
+  background-color: transparent;
+  background-image: none;
+  color: #ffffff;
+  border: none;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+headerbar button:hover {
+  background-color: #3c3c3c;
+  background-image: none;
+}
+
+headerbar button:active {
+  background-color: #1e1e1e;
+  background-image: none;
+}
+
+titlebar {
+  background-color: #2d2d2d;
+  background-image: none;
+  color: #ffffff;
+  border-bottom: 1px solid #555555;
+}
+
+titlebar label,
+titlebar .title {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+label {
+  color: #e0e0e0;
+}
+
+button {
+  background-color: #2d2d2d;
+  background-image: none;
+  color: #ffffff;
+  border: 1px solid #555555;
+  border-radius: 4px;
+  padding: 6px 12px;
+  min-height: 32px;
+}
+
+button:hover {
+  background-color: #3c3c3c;
+  background-image: none;
+}
+
+button:active {
+  background-color: #1e1e1e;
+  background-image: none;
+}
+
+button label {
+  color: #ffffff;
+  font-weight: normal;
+}
+
+button * {
+  color: #ffffff;
+}
+
+entry {
+  background-color: #2d2d2d;
+  color: #ffffff;
+  border: 1px solid #555555;
+}
+
+entry:focus {
+  border: 2px solid #007acc;
+}
+
+entry text {
+  color: #ffffff;
+  caret-color: #ffffff;
+}
+
+entry placeholder {
+  color: #888888;
+}
+
+.password-label {
+  color: #d4d4d4;
+  background-color: #252526;
+  padding: 4px 8px;
+  border-radius: 3px;
+}
+
+.card {
+  background-color: #252526;
+  border: 1px solid #3e3e42;
+  border-radius: 8px;
+  padding: 24px;
+}
