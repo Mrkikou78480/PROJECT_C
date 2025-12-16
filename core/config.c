@@ -7,7 +7,7 @@ AppConfig g_config;
 
 void config_set_defaults(void)
 {
-    strcpy(g_config.db_path, "passwords.db");
+    strcpy(g_config.db_path, "data/passwords.db");
     strcpy(g_config.theme_default, "light");
     strcpy(g_config.theme_light_css, "css/light.css");
     strcpy(g_config.theme_dark_css, "css/dark.css");
