@@ -1,54 +1,42 @@
 CC = gcc
-CFLAGS = -Wall -g -O2 `pkg-config --cflags gtk4`
-LDFLAGS = `pkg-config --libs gtk4` -lsqlite3 -ladvapi32
-SRCDIR = .
-GTKDIR = gtk
-COREDIR = core
-FUNCTIONDIR = gtk/function
-
-SOURCES = $(wildcard $(SRCDIR)/*.c) \
-		  $(wildcard $(GTKDIR)/*.c) \
-		  $(wildcard $(COREDIR)/*.c) \
-		  $(wildcard $(FUNCTIONDIR)/*.c)
-
-# Native host is built as a separate executable and must be excluded from the
-# main GUI binary (it contains its own main()). Define it explicitly so we can
-# filter it out from the app sources.
-NATIVE_HOST_SRC = $(COREDIR)/native_host.c
-
-# Application sources: all sources except the native host
-APP_SOURCES = $(filter-out $(NATIVE_HOST_SRC), $(SOURCES))
-
-APP_OBJECTS = $(APP_SOURCES:.c=.o)
-NATIVE_HOST_OBJ = $(NATIVE_HOST_SRC:.c=.o)
-
-OBJECTS = $(SOURCES:.c=.o)
-
+SHELL = cmd.exe
 TARGET = mon_app.exe
 
-.PHONY: all clean rebuild native_host
+# Source files
+SOURCES = main.c \
+          gtk/main_gtk.c \
+          gtk/ui.c \
+          gtk/settings.c \
+          gtk/generator.c \
+          gtk/manager.c \
+          core/password.c \
+          core/db.c \
+          core/config.c \
+          crypto/sha256.c \
+          gtk/auth_ui.c \
+          core/auth.c \
+          crypto/simplecrypt.c
+
+# Objects
+OBJECTS = $(SOURCES:.c=.o)
+
+# Flags
+CFLAGS = -Wall -g -O2 -Icrypto
+GTK_CFLAGS = $(shell pkg-config --cflags gtk4)
+GTK_LIBS = $(shell pkg-config --libs gtk4)
+LDFLAGS = -mwindows $(GTK_LIBS) -lsqlite3 -ladvapi32
 
 .PHONY: all clean rebuild
 
 all: $(TARGET)
 
+$(TARGET): $(OBJECTS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
-$(TARGET): $(APP_OBJECTS)
-	$(CC) -mwindows -o $@ $^ $(LDFLAGS)
-
-# Build native host executable (no GTK flags)
-native_host: $(NATIVE_HOST_OBJ)
-	$(CC) -o $(COREDIR)/native_host.exe $(NATIVE_HOST_OBJ) -lsqlite3
-
-# Pattern rule for normal compilation (application files with GTK flags)
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-# Compile the native_host.c without GTK flags (avoid pkg-config gtk flags)
-$(NATIVE_HOST_OBJ): $(NATIVE_HOST_SRC)
-	$(CC) -Wall -g -O2 -c $< -o $@
+	$(CC) $(CFLAGS) $(GTK_CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(APP_OBJECTS) $(NATIVE_HOST_OBJ) $(TARGET) $(COREDIR)/native_host.exe
+	del /Q main.o gtk\*.o core\*.o crypto\*.o $(TARGET) 2>nul || exit 0
 
 rebuild: clean all

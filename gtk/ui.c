@@ -4,81 +4,12 @@
 #include "manager.h"
 #include "auth_ui.h"
 #include "../core/auth.h"
+#include "../core/config.h"
 
-static guint g_session_timeout_id = 0;
 static GtkWidget *g_main_window = NULL;
-
-static void on_authenticated_again(GtkWidget *win);
-
-static gboolean on_session_timeout(gpointer user_data)
-{
-    (void)user_data;
-
-    if (g_main_window)
-    {
-        auth_set_current_user("");
-        GtkApplication *app = gtk_window_get_application(GTK_WINDOW(g_main_window));
-        GtkWidget *welcome = create_welcome_layout(app, g_main_window, on_authenticated_again);
-        gtk_window_set_child(GTK_WINDOW(g_main_window), welcome);
-    }
-
-    g_session_timeout_id = 0;
-    return G_SOURCE_REMOVE;
-}
-
-static void reset_session_timer(void)
-{
-    if (g_session_timeout_id != 0)
-    {
-        g_source_remove(g_session_timeout_id);
-    }
-
-    g_session_timeout_id = g_timeout_add_seconds(120, on_session_timeout, NULL);
-}
-
-static void stop_session_timer(void)
-{
-    if (g_session_timeout_id != 0)
-    {
-        g_source_remove(g_session_timeout_id);
-        g_session_timeout_id = 0;
-    }
-}
-
-static gboolean on_user_activity(GtkEventControllerMotion *controller, gdouble x, gdouble y, gpointer user_data)
-{
-    (void)controller;
-    (void)x;
-    (void)y;
-    (void)user_data;
-
-    if (auth_get_current_user() && *auth_get_current_user())
-    {
-        reset_session_timer();
-    }
-
-    return FALSE;
-}
-
-static gboolean on_key_activity(GtkEventControllerKey *controller, guint keyval, guint keycode, GdkModifierType state, gpointer user_data)
-{
-    (void)controller;
-    (void)keyval;
-    (void)keycode;
-    (void)state;
-    (void)user_data;
-
-    if (auth_get_current_user() && *auth_get_current_user())
-    {
-        reset_session_timer();
-    }
-
-    return FALSE;
-}
 
 static void on_authenticated_again(GtkWidget *win)
 {
-    ui_start_session();
     GtkWidget *layout = create_home_layout(win);
     gtk_window_set_child(GTK_WINDOW(win), layout);
 }
@@ -86,7 +17,6 @@ static void on_authenticated_again(GtkWidget *win)
 static void on_logout(GtkButton *btn, gpointer win)
 {
     (void)btn;
-    ui_stop_session();
     auth_set_current_user("");
     GtkApplication *app = gtk_window_get_application(GTK_WINDOW(win));
     GtkWidget *welcome = create_welcome_layout(app, (GtkWidget *)win, on_authenticated_again);
@@ -120,7 +50,10 @@ static void apply_theme_css_file(const char *css_path)
 
 void ui_init_theme(void)
 {
-    apply_theme_css_file("css/light.css");
+    if (strcmp(g_config.theme_default, "dark") == 0)
+        apply_theme_css_file(g_config.theme_dark_css);
+    else
+        apply_theme_css_file(g_config.theme_light_css);
 }
 
 void ui_init_session(GtkWidget *main_window)
@@ -128,28 +61,18 @@ void ui_init_session(GtkWidget *main_window)
     g_main_window = main_window;
 }
 
-void ui_start_session(void)
-{
-    reset_session_timer();
-}
-
-void ui_stop_session(void)
-{
-    stop_session_timer();
-}
-
 static void on_theme_light(GtkButton *button, gpointer user_data)
 {
     (void)button;
     (void)user_data;
-    apply_theme_css_file("css/light.css");
+    apply_theme_css_file(g_config.theme_light_css);
 }
 
 static void on_theme_dark(GtkButton *button, gpointer user_data)
 {
     (void)button;
     (void)user_data;
-    apply_theme_css_file("css/dark.css");
+    apply_theme_css_file(g_config.theme_dark_css);
 }
 
 GtkWidget *ui_create_theme_switch(void)
@@ -169,20 +92,12 @@ GtkWidget *create_home_layout(GtkWidget *window)
 {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
-    GtkEventController *motion_controller = gtk_event_controller_motion_new();
-    g_signal_connect(motion_controller, "motion", G_CALLBACK(on_user_activity), NULL);
-    gtk_widget_add_controller(box, motion_controller);
-
-    GtkEventController *key_controller = gtk_event_controller_key_new();
-    g_signal_connect(key_controller, "key-pressed", G_CALLBACK(on_key_activity), NULL);
-    gtk_widget_add_controller(box, key_controller);
-
     const char *user = auth_get_current_user();
     char buf[256];
     if (user && *user)
-        snprintf(buf, sizeof(buf), "Bienvenue %s dans le gestionnaire de mots de passe !", user);
+        snprintf(buf, sizeof(buf), "Bienvenue %s !", user);
     else
-        snprintf(buf, sizeof(buf), "Bienvenue dans le gestionnaire de mots de passe !");
+        snprintf(buf, sizeof(buf), "Bienvenue !");
 
     GtkWidget *welcome_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
     gtk_widget_set_halign(welcome_box, GTK_ALIGN_CENTER);
@@ -230,7 +145,7 @@ void show_generator_window(GtkButton *button, gpointer user_data)
     (void)user_data;
     GtkWidget *gen_window = gtk_window_new();
     gtk_window_set_title(GTK_WINDOW(gen_window), "Générateur de mot de passe");
-    gtk_window_set_default_size(GTK_WINDOW(gen_window), 400, 250);
+    gtk_window_set_default_size(GTK_WINDOW(gen_window), g_config.win_generator_width, g_config.win_generator_height);
 
     GtkWidget *layout = create_generator_layout();
     gtk_window_set_child(GTK_WINDOW(gen_window), layout);
@@ -244,7 +159,7 @@ void show_manager_window(GtkButton *button, gpointer user_data)
     (void)user_data;
     GtkWidget *mgr_window = gtk_window_new();
     gtk_window_set_title(GTK_WINDOW(mgr_window), "Gestionnaire de mots de passe");
-    gtk_window_set_default_size(GTK_WINDOW(mgr_window), 700, 400);
+    gtk_window_set_default_size(GTK_WINDOW(mgr_window), g_config.win_manager_width, g_config.win_manager_height);
     GtkWidget *layout = create_manager_layout();
     gtk_window_set_child(GTK_WINDOW(mgr_window), layout);
     gtk_window_present(GTK_WINDOW(mgr_window));

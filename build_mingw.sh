@@ -20,6 +20,7 @@ SOURCES=(
   gtk/manager.c
   core/password.c
   core/db.c
+  core/config.c
   crypto/sha256.c
   gtk/auth_ui.c
   core/auth.c

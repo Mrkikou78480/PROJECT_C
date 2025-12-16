@@ -1,6 +1,7 @@
 #include <gtk/gtk.h>
 #include "ui.h"
 #include "../core/auth.h"
+#include "../core/config.h"
 
 typedef struct
 {
@@ -121,7 +122,7 @@ void show_account_settings_window(GtkButton *button, gpointer user_data)
     GtkWidget *parent = GTK_WIDGET(user_data);
     GtkWidget *win = gtk_window_new();
     gtk_window_set_title(GTK_WINDOW(win), "Paramètres du compte");
-    gtk_window_set_default_size(GTK_WINDOW(win), 420, 260);
+    gtk_window_set_default_size(GTK_WINDOW(win), g_config.win_settings_width, g_config.win_settings_height);
     gtk_window_set_transient_for(GTK_WINDOW(win), GTK_WINDOW(parent));
 
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -153,7 +154,6 @@ void show_account_settings_window(GtkButton *button, gpointer user_data)
 
     gtk_box_append(GTK_BOX(box), gtk_label_new("Photo de profil (image locale) :"));
 
-    // Créer une boîte horizontale pour le champ de texte et le bouton Parcourir
     GtkWidget *avatar_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
     gtk_box_append(GTK_BOX(box), avatar_box);
 

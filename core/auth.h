@@ -24,8 +24,6 @@ const char *auth_get_last_error(void);
 int auth_set_avatar_path(const char *username, const char *path);
 const char *auth_get_current_avatar_path(void);
 
-// Retourne la clé de chiffrement (SHA-256 du mot de passe maître) pour l'utilisateur courant
-// Le buffer doit faire au moins 33 octets (32 + 1 pour \0)
 int auth_get_encryption_key(char out[33]);
 
 #endif

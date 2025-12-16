@@ -39,6 +39,7 @@ typedef struct
     GtkWidget *old_password_entry;
     GtkWindow *dialog;
     char stored_encrypted_password[256];
+    int stored_encrypted_len;
 } SaveEditData;
 
 static void add_passwords_to_list(GtkListBox *list_box);
@@ -85,8 +86,6 @@ GtkWidget *create_manager_layout()
     gtk_box_append(GTK_BOX(box), btn_back);
     g_signal_connect(btn_back, "clicked", G_CALLBACK(on_back_clicked), NULL);
 
-    // Assurer le CSS pour les labels de mots de passe
-
     return box;
 }
 
@@ -103,19 +102,13 @@ static void on_save_password(GtkButton *button, gpointer user_data)
         if (!auth_get_encryption_key(key))
         {
             GtkAlertDialog *alert = gtk_alert_dialog_new("Erreur clé de chiffrement utilisateur");
-            gtk_alert_dialog_show(alert, NULL);
+            gtk_alert_dialog_show(alert, GTK_WINDOW(gtk_widget_get_root(GTK_WIDGET(button))));
             return;
         }
 
-        // Chiffrer le mot de passe avant sauvegarde
         char encrypted[256] = {0};
         simplecrypt_encrypt(key, password, encrypted, strlen(password));
         db_add_password(site, login, encrypted);
-
-        GtkWidget *info = gtk_window_new();
-        gtk_window_set_title(GTK_WINDOW(info), "Info");
-        gtk_window_set_child(GTK_WINDOW(info), gtk_label_new("Mot de passe enregistré !"));
-        gtk_window_present(GTK_WINDOW(info));
 
         GtkWidget *list_box = g_object_get_data(G_OBJECT(button), "list_box");
         if (list_box)
@@ -143,7 +136,6 @@ static void on_edit_save_clicked(GtkButton *button, gpointer user_data)
     const char *new_password = gtk_editable_get_text(GTK_EDITABLE(sd->password_entry));
     const char *old_password_input = gtk_editable_get_text(GTK_EDITABLE(sd->old_password_entry));
 
-    // Vérification de l'ancien mot de passe
     char key[33] = {0};
     if (!auth_get_encryption_key(key))
     {
@@ -152,11 +144,11 @@ static void on_edit_save_clicked(GtkButton *button, gpointer user_data)
         return;
     }
 
-    // Calculer la longueur du mot de passe chiffré (stocké en base)
-    size_t enc_len = strlen(sd->stored_encrypted_password);
+    int enc_len = sd->stored_encrypted_len;
     char decrypted[256] = {0};
     simplecrypt_decrypt(key, sd->stored_encrypted_password, decrypted, enc_len);
-    decrypted[enc_len] = '\0'; // Sécurise la terminaison
+    decrypted[enc_len] = '\0';
+
     if (strcmp(decrypted, old_password_input) != 0)
     {
         GtkAlertDialog *alert = gtk_alert_dialog_new("Ancien mot de passe incorrect.");
@@ -166,13 +158,13 @@ static void on_edit_save_clicked(GtkButton *button, gpointer user_data)
 
     if (new_login && new_login[0] && new_password && new_password[0])
     {
-        // Chiffrer le nouveau mot de passe avant sauvegarde
         char encrypted[256] = {0};
         simplecrypt_encrypt(key, new_password, encrypted, strlen(new_password));
         db_update_entry(sd->site, sd->login, new_login, encrypted);
         gtk_list_box_remove_all(sd->list_box);
         add_passwords_to_list(sd->list_box);
     }
+
     if (sd->dialog)
         gtk_window_close(sd->dialog);
 }
@@ -228,7 +220,6 @@ static void on_edit_clicked(GtkButton *button, gpointer user_data)
     sd->old_password_entry = old_password_entry;
     sd->dialog = dialog;
 
-    // Récupérer le mot de passe chiffré stocké pour ce site/login
     const char *owner = auth_get_current_user();
     sqlite3_stmt *stmt = NULL;
     const char *q = "SELECT password FROM passwords WHERE owner = ? AND site = ? AND login = ?;";
@@ -245,6 +236,7 @@ static void on_edit_clicked(GtkButton *button, gpointer user_data)
             {
                 memcpy(sd->stored_encrypted_password, enc, enc_len);
                 sd->stored_encrypted_password[enc_len] = '\0';
+                sd->stored_encrypted_len = enc_len;
             }
         }
         sqlite3_finalize(stmt);
@@ -339,16 +331,7 @@ static void on_verify_password_ok(GtkButton *button, gpointer user_data)
     const char *pwd = gtk_editable_get_text(GTK_EDITABLE(entry));
     const char *user = auth_get_current_user();
 
-    if (!user || !*user)
-    {
-        GtkWidget *err = gtk_window_new();
-        gtk_window_set_title(GTK_WINDOW(err), "Erreur");
-        gtk_window_set_child(GTK_WINDOW(err), gtk_label_new("Aucun utilisateur connecté."));
-        gtk_window_present(GTK_WINDOW(err));
-        return;
-    }
-
-    if (!pwd || !*pwd || !auth_verify_login(user, pwd))
+    if (!user || !*user || !pwd || !*pwd || !auth_verify_login(user, pwd))
     {
         GtkWidget *err = gtk_window_new();
         gtk_window_set_title(GTK_WINDOW(err), "Erreur");
@@ -372,6 +355,17 @@ static void on_verify_password_ok(GtkButton *button, gpointer user_data)
     simplecrypt_decrypt(key, vdata->password, display_password, pwd_len);
     display_password[pwd_len] = '\0';
 
+    if (!g_utf8_validate(display_password, -1, NULL))
+    {
+        GtkWidget *err = gtk_window_new();
+        gtk_window_set_title(GTK_WINDOW(err), "Erreur");
+        gtk_window_set_child(GTK_WINDOW(err), gtk_label_new("Impossible de déchiffrer."));
+        gtk_window_present(GTK_WINDOW(err));
+        if (dialog)
+            gtk_window_destroy(GTK_WINDOW(dialog));
+        return;
+    }
+
     char buf[1024];
     snprintf(buf, sizeof(buf), "Site: %s | Identifiant: %s | Mot de passe: %s",
              vdata->site, vdata->login, display_password);
@@ -387,7 +381,7 @@ static void on_view_password_clicked(GtkButton *button, gpointer user_data)
     ViewPasswordData *vdata = (ViewPasswordData *)user_data;
 
     GtkWidget *dialog = gtk_window_new();
-    gtk_window_set_title(GTK_WINDOW(dialog), "Vérification requise");
+    gtk_window_set_title(GTK_WINDOW(dialog), "Vérification");
     gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
     gtk_window_set_default_size(GTK_WINDOW(dialog), 350, 150);
 
@@ -398,7 +392,7 @@ static void on_view_password_clicked(GtkButton *button, gpointer user_data)
     gtk_widget_set_margin_end(box, 16);
     gtk_window_set_child(GTK_WINDOW(dialog), box);
 
-    gtk_box_append(GTK_BOX(box), gtk_label_new("Entrez votre mot de passe maître pour voir ce mot de passe :"));
+    gtk_box_append(GTK_BOX(box), gtk_label_new("Entrez votre mot de passe maître :"));
 
     GtkWidget *entry = gtk_entry_new();
     gtk_entry_set_visibility(GTK_ENTRY(entry), FALSE);

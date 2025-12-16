@@ -36,7 +36,7 @@ static void on_login(GtkButton *b, gpointer data)
     }
     if (auth_verify_login(u, p))
     {
-        db_migrate_encrypt_passwords();
+
         if (c->ok)
             c->ok(c->window);
     }

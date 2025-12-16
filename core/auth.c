@@ -8,7 +8,7 @@
 #include <string.h>
 
 #define SALT_LEN 16
-#define HASH_LEN 32 // SHA-256
+#define HASH_LEN 32
 
 #ifndef BCRYPT_ALG_HANDLE_HMAC_FLAG
 #define BCRYPT_ALG_HANDLE_HMAC_FLAG 0x00000008
@@ -69,11 +69,8 @@ const char *auth_get_current_avatar_path(void)
     return g_auth_avatar_path;
 }
 
-// Retourne la clé de chiffrement (SHA-256 du mot de passe maître) pour l'utilisateur courant
-// Le buffer doit faire au moins 33 octets (32 + 1 pour \0)
 int auth_get_encryption_key(char out[33])
 {
-    // On va chercher le hash du mot de passe stocké pour l'utilisateur courant
     const char *user = auth_get_current_user();
     if (!user || !*user)
         return 0;
@@ -348,6 +345,9 @@ int auth_change_password(const char *username,
         return 0;
     }
 
+    char old_key[33] = {0};
+    auth_get_encryption_key(old_key);
+
     unsigned char salt[SALT_LEN];
     unsigned char hash[HASH_LEN];
     if (!random_bytes(salt, sizeof(salt)))
@@ -371,7 +371,18 @@ int auth_change_password(const char *username,
     int rc = sqlite3_step(st);
     sqlite3_finalize(st);
     if (rc == SQLITE_DONE)
+    {
+        char new_key[33] = {0};
+        memcpy(new_key, hash, HASH_LEN);
+        new_key[32] = '\0';
+
+        if (!db_reencrypt_passwords_for_current_user(old_key, new_key))
+        {
+            set_auth_error("Ré-encryptage des mots de passe échoué");
+            return 0;
+        }
         return 1;
+    }
 
     set_auth_error("change_password update failed");
     return 0;

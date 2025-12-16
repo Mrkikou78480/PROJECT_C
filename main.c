@@ -2,10 +2,13 @@
 #include "gtk/main_gtk.h"
 #include "core/db.h"
 #include "core/auth.h"
+#include "core/config.h"
 
 int main(int argc, char *argv[])
 {
-    db_init("data/passwords.db");
+    config_load("config.ini");
+
+    db_init(g_config.db_path);
     auth_init_db();
 
     GtkApplication *app = gtk_application_new("com.example.PasswordManager", G_APPLICATION_DEFAULT_FLAGS);
